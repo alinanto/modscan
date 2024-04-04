@@ -1,9 +1,0 @@
-C:/Users/alina/projects/modscan/bin/CMakeFiles/modscan.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/edit_cache.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/rebuild_cache.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/list_install_components.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/install.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/install/local.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/install/strip.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/modscan_autogen_timestamp_deps.dir
-C:/Users/alina/projects/modscan/bin/CMakeFiles/modscan_autogen.dir
