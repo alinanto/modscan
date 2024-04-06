@@ -1,2 +1,5 @@
 #build directory
-bin/*
+build/*
+
+#deploy directory
+build/deploy/*
