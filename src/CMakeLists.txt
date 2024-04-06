@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
+message("-- Source Directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+message("-- Cmake Prefix Path: ${CMAKE_PREFIX_PATH}")
+message("-- Build Directory: ${CMAKE_CURRENT_BINARY_DIR}")
+
 project(modscan VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
@@ -68,3 +72,20 @@ install(TARGETS modscan
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(modscan)
 endif()
+
+IF (WIN32)
+    find_program(QT_DEPLOY_COMMAND windeployqt CMAKE_PREFIX_PATH)
+    message("-- Found windeployqt.exe at location: ${QT_DEPLOY_COMMAND}")
+    set(DEPLOY_DIR_MODSCAN "${CMAKE_CURRENT_BINARY_DIR}/deploy/")
+    message("-- Deploying at location: ${DEPLOY_DIR_MODSCAN}")
+    add_custom_command(
+        TARGET modscan
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} ARGS -E rm -rf ${DEPLOY_DIR_MODSCAN}
+        COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${DEPLOY_DIR_MODSCAN}
+        COMMAND ${CMAKE_COMMAND} ARGS -E copy $<TARGET_FILE:modscan> ${DEPLOY_DIR_MODSCAN}
+        COMMAND ${QT_DEPLOY_COMMAND} ARGS ${DEPLOY_DIR_MODSCAN}\$<TARGET_FILE_NAME:modscan>
+    )
+ELSE()
+  # Set stuff for other systems
+ENDIF()
