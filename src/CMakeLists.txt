@@ -89,3 +89,7 @@ IF (WIN32)
 ELSE()
   # Set stuff for other systems
 ENDIF()
+
+add_subdirectory(libcjson)
+add_subdirectory(libmodbus)
+add_subdirectory(libmodalo)

@@ -5,7 +5,7 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+class Modscan;
 }
 QT_END_NAMESPACE
 
@@ -18,6 +18,6 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::Modscan *ui;
 };
 #endif // MAINWINDOW_H
