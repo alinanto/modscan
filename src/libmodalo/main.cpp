@@ -6,13 +6,12 @@ int main()
 {
     std::cout<<"Hello World.\n";
 
-    modalo::Reg registerOne;
+    modalo::MemBlock Memory;
+    std::cout<<sizeof(Memory)<<std::endl;
+    Memory.read();
 
-    std::cout<<sizeof(registerOne);
-
-    registerOne.read();
-
-
-
+    modalo::Reg regist;
+    std::cout<<sizeof(regist)<<std::endl;
+    
     return 0;
 }

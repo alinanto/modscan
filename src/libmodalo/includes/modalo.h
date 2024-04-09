@@ -35,27 +35,67 @@ namespace modalo {
     float valueF32; //IEEE 32-bit float
   }DATA32BIT;
 
-  class MODALO_API Reg{
+  // class declarations
+  class MODALO_API Reg; // class used to represent a register
+  class MODALO_API MemBlock; // parent class used purely for reading contigous memory 
+  
+  class MODALO_API MemBlock{
+
     public:
-    std::string regName;
-    uint16_t regAddress;
-    REGTYPE regType;
-    uint16_t regSize;
-    uint16_t byteReversed;
-    uint16_t bitReversed;
+    uint16_t address;
+    uint16_t size;
     uint16_t functionCode;
+    uint16_t slaveID;
+
+    // constructor : Address, Size , Function Code , Slave ID
+    MemBlock();
+    MemBlock(uint16_t addr, uint16_t sz, uint16_t fCode,uint16_t sID);
+
+    // read memory from modbus device
+    bool read();
+
+    private: 
+    uint16_t * pData;
+    Reg * pFirstReg;
+  };
+
+  class MODALO_API Reg{
+
+    public: 
+    uint16_t address;
+    uint16_t size;
+    std::string name;
+    std::string unit;
+    REGTYPE type;
+    bool byteReversed;
+    bool bitReversed;
     uint16_t multiplier;
     uint16_t divisor;
-    uint16_t movingAvgFilter;
-    DATA32BIT data;        // for reading during a single modbus read request
+    DATA32BIT data;     // for getting value from parent
     double value;       // to store value after successfull read
-
+    
     Reg();
-    bool read();
+    Reg(uint16_t address, 
+        uint16_t size, 
+        std::string name, 
+        std::string unit, 
+        REGTYPE type,
+        bool byteReversed,
+        bool bitReversed,
+        uint16_t multiplier,
+        uint16_t divisor,
+        MemBlock *parent);
+
+    void getValueFromParent();
+    
+    private:
+
+    MemBlock *parent; // pointer to Parent MemBlock
+    Reg *pNextReg;   // pointer to Next Register in Parent MemBlock
+
     void reverseByte();
     void reverseBit();
-
   };
-}
 
+}
 #endif
