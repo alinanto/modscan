@@ -3,6 +3,15 @@
 
 #include <stdint.h>
 #include <string>
+#include "modbus.h"
+
+/* Pending Works
+
+1) REG SIZE to be made private as changing it in userspace can cause memory reallocation issues
+2) ERROR API to be ported to CPP
+3) 
+
+*/
 
 #ifdef _WIN32
   /* You should define MODALO_EXPORT *only* when building the DLL. */
@@ -43,18 +52,17 @@ namespace modalo {
 
     public:
     uint16_t address;
-    uint16_t size;
     uint16_t functionCode;
     uint16_t slaveID;
 
-    // constructor : Address, Size , Function Code , Slave ID
-    MemBlock();
-    MemBlock(uint16_t addr, uint16_t sz, uint16_t fCode,uint16_t sID);
-
-    // read memory from modbus device
-    bool read();
+    MemBlock(); // constructor
+    ~MemBlock(); // desctructor
+    bool read(modbus_t* ctx); // read memory from modbus device
+    bool setSize(uint16_t size);   // set size of MemBlock element
 
     private: 
+    uint16_t size; // private because should not be changed in userspace due to 
+                   // pData reallocation issues.
     uint16_t * pData;
     Reg * pFirstReg;
   };
@@ -75,25 +83,15 @@ namespace modalo {
     double value;       // to store value after successfull read
     
     Reg();
-    Reg(uint16_t address, 
-        uint16_t size, 
-        std::string name, 
-        std::string unit, 
-        REGTYPE type,
-        bool byteReversed,
-        bool bitReversed,
-        uint16_t multiplier,
-        uint16_t divisor,
-        MemBlock *parent);
-
     void getValueFromParent();
     
     private:
 
     MemBlock *parent; // pointer to Parent MemBlock
     Reg *pNextReg;   // pointer to Next Register in Parent MemBlock
+    Reg *pPrevReg;   // pointer to Next Register in Parent MemBlock
 
-    void reverseByte();
+    uint16_t reverseBits(uint16_t num);
     void reverseBit();
   };
 
