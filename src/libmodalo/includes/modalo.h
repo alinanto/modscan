@@ -39,6 +39,20 @@ namespace modalo {
     M_LITTLE_ENDIAN = 1
   }ENDIANNESS;
 
+  // enum definition for denoting Modalo erros
+  typedef enum ERROR_TYPE {
+    ENO_ERROR,
+    EMODBUS_INIT,
+    EPARSE_CONFIG_STRING,
+    EPARSE_CONFIG_FILE,
+    EVALIDATE_PARAMETER,
+    EFILE_BUFFER,
+    EPARSE_CJSON_FILE,
+    EPARSE_CJSON_STRING,
+    ELOG_FILE,
+    EMODBUS_READ
+  }ERROR_TYPE;
+
   // union definition for holding various register type
   typedef union DATA32BIT {
     struct {
@@ -53,6 +67,7 @@ namespace modalo {
   // class declarations
   class MODALO_API Reg; // class used to represent a register
   class MODALO_API MemBlock; // parent class used purely for reading contigous memory 
+  class MODALO_API Merror; // class to handle Modalo errors
   
   class MODALO_API MemBlock{
 
@@ -99,6 +114,19 @@ namespace modalo {
 
     uint16_t reverseBits(uint16_t num);
   };
+
+  class MODALO_API Merror{
+
+    public:
+    std::string errorString;
+    ERROR_TYPE error_t;
+
+    Merror(); // constructor
+    void setLastError(ERROR_TYPE error_t, std::string errorString);
+
+    private:
+
+  }M_Error; // Object created to handle modalo errors
 
 }
 #endif

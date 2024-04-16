@@ -144,4 +144,11 @@ namespace modalo {
         reverse_num <<= count;
         return reverse_num;
     }
+
+    // Merror class definitions
+
+    Merror::Merror() {
+        errorString = "";
+        error_t = ENO_ERROR;
+    }
 }
