@@ -7,9 +7,9 @@
 
 /* Pending Works
 
-1) REG SIZE to be made private as changing it in userspace can cause memory reallocation issues
-2) ERROR API to be ported to CPP
-3) 
+1) ERROR API to be ported to CPP
+2) setValue to be implement
+3)
 
 */
 
@@ -32,6 +32,12 @@ namespace modalo {
     U32 = 2,
     F32 = 12
   }REGTYPE;
+
+  // enum definition for denoting byte and bit order
+  typedef enum ENDIANNESS {
+    M_BIG_ENDIAN = 0,
+    M_LITTLE_ENDIAN = 1
+  }ENDIANNESS;
 
   // union definition for holding various register type
   typedef union DATA32BIT {
@@ -75,15 +81,15 @@ namespace modalo {
     std::string name;
     std::string unit;
     REGTYPE type;
-    bool byteReversed;
-    bool bitReversed;
+    ENDIANNESS byteOrder;
+    ENDIANNESS bitOrder;
     uint16_t multiplier;
     uint16_t divisor;
-    DATA32BIT data;     // for getting value from parent
+    DATA32BIT data32;     // for getting value from parent
     double value;       // to store value after successfull read
     
-    Reg();
-    void getValueFromParent();
+    Reg();  // constructor
+    bool setValue(DATA32BIT data32); // to be used only by parent MemBlock Object
     
     private:
 
@@ -92,7 +98,6 @@ namespace modalo {
     Reg *pPrevReg;   // pointer to Next Register in Parent MemBlock
 
     uint16_t reverseBits(uint16_t num);
-    void reverseBit();
   };
 
 }

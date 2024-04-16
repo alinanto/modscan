@@ -1,7 +1,7 @@
 #include "modalo.h"
 
 namespace modalo {
-
+    
     // MemBlock Class function definitions
     MemBlock::MemBlock(){
         address = 0;
@@ -72,31 +72,6 @@ namespace modalo {
             //modaloSetLastError(EMODBUS_READ,error);
             return false;;
         }
-        /* shift following code to Reg Object
-        if(byteReversed) { // reverse the bytes default : Big endian
-            uint16_t temp;
-            temp = reg->readReg.value.highWord;
-            reg->readReg.value.highWord = reg->readReg.value.lowWord;
-            reg->readReg.value.lowWord = temp;
-        }
-        if(reg->bitReversed) { // reverse the Bits
-            reg->readReg.value.lowWord = reverseBits(reg->readReg.value.highWord);
-            reg->readReg.value.highWord = reverseBits(reg->readReg.value.highWord);
-        }
-
-        if(reg->regType == F32) // F32
-            reg->value = ((double)reg->readReg.valueF32 * (double)reg->multiplier) / (double)reg->divisor;
-        else if(reg->regType == U32) // U32
-            reg->value = ((double)reg->readReg.valueU32 * (double)reg->multiplier) / (double)reg->divisor;
-        else if(reg->regType == U16)// U16
-            reg->value = ((double)reg->readReg.valueU16 * (double)reg->multiplier) / (double)reg->divisor;
-        else {
-            sprintf(error, "SLAVE ID: %u => Reading register %s, failed -> Invalid Register Type: %d",slaveID,reg->regName,reg->regType);
-            modaloSetLastError(EMODBUS_READ,error);
-            return false;;
-        }
-        return 1; // read success
-        */
        return true;
     }
 
@@ -108,13 +83,49 @@ namespace modalo {
         name=""; 
         unit=""; 
         type=U16;
-        byteReversed=false;
-        bitReversed=false;
+        byteOrder=M_BIG_ENDIAN;
+        bitOrder=M_BIG_ENDIAN;
         multiplier=1;
         divisor=1;
+        data32.valueU32 = 0;
         parent=NULL;
         pNextReg = NULL;
         pPrevReg = NULL;
+        
+    }
+
+    // Function to accept data from parent MemBlock    
+    bool Reg::setValue(DATA32BIT data32) {
+        if(byteOrder == M_BIG_ENDIAN) { // reverse the bytes for Big Endian Register Byte Order
+            uint16_t temp;
+            temp = data32.value.highWord;
+            data32.value.highWord = data32.value.lowWord;
+            data32.value.lowWord = temp;
+        }
+        if(bitOrder == M_LITTLE_ENDIAN) { // reverse the Bits for Little Endian Register Byte Order
+            data32.value.lowWord = reverseBits(data32.value.highWord);
+            data32.value.highWord = reverseBits(data32.value.highWord);
+        }
+
+        switch(type) {
+            case F32: { // F32
+                value = ((double)data32.valueF32 * (double)multiplier) / (double)divisor;
+                break;
+            }
+            case U32: { // U32
+                value = ((double)data32.valueU32 * (double)multiplier) / (double)divisor;
+                break;
+            }
+            case U16: { // U16
+                value = ((double)data32.valueU16 * (double)multiplier) / (double)divisor;
+                break;
+            }
+            default : { // add code here : handle error
+                return false;
+            }
+        }
+        this->data32 = data32; // only if valid type 
+        return true;
     }
 
     // Function to reverse bits of num
