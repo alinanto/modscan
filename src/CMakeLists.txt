@@ -9,6 +9,8 @@ project(modscan VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(DEPLOY_DIR_MODSCAN "${CMAKE_CURRENT_BINARY_DIR}/../bin/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DEPLOY_DIR_MODSCAN})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -46,7 +48,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(modscan PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(modscan PRIVATE Qt${QT_VERSION_MAJOR}::Widgets modalo)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -76,19 +78,17 @@ endif()
 IF (WIN32)
     find_program(QT_DEPLOY_COMMAND windeployqt CMAKE_PREFIX_PATH)
     message("-- Found windeployqt.exe at location: ${QT_DEPLOY_COMMAND}")
-     set(DEPLOY_DIR_MODSCAN "${CMAKE_CURRENT_BINARY_DIR}/../bin/")
     message("-- Deploying at location: ${DEPLOY_DIR_MODSCAN}")
     add_custom_command(
         TARGET modscan
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} ARGS -E rm -rf ${DEPLOY_DIR_MODSCAN}
-        COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${DEPLOY_DIR_MODSCAN}
-        COMMAND ${CMAKE_COMMAND} ARGS -E copy $<TARGET_FILE:modscan> ${DEPLOY_DIR_MODSCAN}
+        #COMMAND ${CMAKE_COMMAND} ARGS -E rm -rf ${DEPLOY_DIR_MODSCAN}
+        #COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${DEPLOY_DIR_MODSCAN}
+        #COMMAND ${CMAKE_COMMAND} ARGS -E copy $<TARGET_FILE:modscan> ${DEPLOY_DIR_MODSCAN}
         COMMAND ${QT_DEPLOY_COMMAND} ARGS ${DEPLOY_DIR_MODSCAN}\$<TARGET_FILE_NAME:modscan>
     )
 ELSE()
   # Set stuff for other systems
 ENDIF()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DEPLOY_DIR_MODSCAN}/../bin )
 add_subdirectory(libmodalo)
