@@ -2,4 +2,5 @@
 build/*
 
 #deploy directory
-build/deploy/*
+bin/*
+

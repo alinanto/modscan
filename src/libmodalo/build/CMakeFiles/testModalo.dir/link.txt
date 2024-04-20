@@ -1,3 +1,0 @@
-C:\mingw64\bin\cmake.exe -E rm -f CMakeFiles\testModalo.dir/objects.a
-C:\mingw64\bin\ar.exe qc CMakeFiles\testModalo.dir/objects.a @CMakeFiles\testModalo.dir\objects1.rsp
-C:\mingw64\bin\c++.exe -Wl,--whole-archive CMakeFiles\testModalo.dir/objects.a -Wl,--no-whole-archive -o testModalo.exe -Wl,--out-implib,libtestModalo.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\testModalo.dir\linkLibs.rsp

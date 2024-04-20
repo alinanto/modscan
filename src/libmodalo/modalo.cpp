@@ -145,10 +145,51 @@ namespace modalo {
         return reverse_num;
     }
 
-    // Merror class definitions
+    // Mlog class definitions
 
-    Merror::Merror() {
-        errorString = "";
-        error_t = ENO_ERROR;
+    Mlog::Mlog(std::string logFname) {
+        logString = "";
+        module_t = L_NOLOG;
+
+        // to open errorLogFile
+        if(!logFname.empty())
+        {
+            logFile.open(logFname, 
+                              std::ofstream::out | std::ofstream::app);
+
+
+        }
+        setLastLog(L_FILE_IO,logFname + " opened for Logs.");        
     }
+
+    Mlog::~Mlog() {
+        setLastLog(L_TASK,"Program Terminated.");
+        if(logFile.is_open()) logFile.close();
+    }
+
+    void Mlog::setLastLog(MODULE_TYPE module_t, std::string logString) {
+        this->module_t = module_t;
+        this->logString = logString;
+        
+        time_t seconds=time(NULL); // get the current time
+        localTimeS = localtime(&seconds); // set the time struct
+
+        if(logFile.is_open()) logFile<<getLastLog(); // output to logFile
+    }
+
+    std::string Mlog::getLastLog() {
+        std::string out;
+
+        out = fmt::format("Hello World!");
+        // %04d%02d%02dT%02d%02d%02dZ"
+        /*
+        localTimeS->tm_year+1900, // The number of years since 1900
+        localTimeS->tm_mon+1,     // month, range 0 to 11
+        localTimeS->tm_mday,      // day of the month, range 1 to 31
+        localTimeS->tm_hour,      // hours, range 0 to 23
+        localTimeS->tm_min,       // minutes, range 0 to 59
+        localTimeS->tm_sec;       //update the ISO 8601 time strings */
+        return out;
+    }
+    
 }

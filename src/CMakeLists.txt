@@ -76,7 +76,7 @@ endif()
 IF (WIN32)
     find_program(QT_DEPLOY_COMMAND windeployqt CMAKE_PREFIX_PATH)
     message("-- Found windeployqt.exe at location: ${QT_DEPLOY_COMMAND}")
-    set(DEPLOY_DIR_MODSCAN "${CMAKE_CURRENT_BINARY_DIR}/deploy/")
+     set(DEPLOY_DIR_MODSCAN "${CMAKE_CURRENT_BINARY_DIR}/../bin/")
     message("-- Deploying at location: ${DEPLOY_DIR_MODSCAN}")
     add_custom_command(
         TARGET modscan
@@ -90,4 +90,5 @@ ELSE()
   # Set stuff for other systems
 ENDIF()
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DEPLOY_DIR_MODSCAN}/../bin )
 add_subdirectory(libmodalo)

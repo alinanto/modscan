@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 #include <string>
-#include "modbus.h"
+#include <fstream>
+#include <time.h>
+#include <fmt/core.h>
+#include <modbus.h>
 
 /* Pending Works
 
@@ -40,18 +43,17 @@ namespace modalo {
   }ENDIANNESS;
 
   // enum definition for denoting Modalo erros
-  typedef enum ERROR_TYPE {
-    ENO_ERROR,
-    EMODBUS_INIT,
-    EPARSE_CONFIG_STRING,
-    EPARSE_CONFIG_FILE,
-    EVALIDATE_PARAMETER,
-    EFILE_BUFFER,
-    EPARSE_CJSON_FILE,
-    EPARSE_CJSON_STRING,
-    ELOG_FILE,
-    EMODBUS_READ
-  }ERROR_TYPE;
+  typedef enum MODULE_TYPE {
+    L_TASK=1,
+    L_NOLOG,
+    L_MODBUS,
+    L_FILE_IO,
+    E_MODBUS=-10000,
+    E_MODBUS_READ,
+    E_MODBUS_SLAVE,
+    E_PARSE_MAP,
+    E_PARSE_CONFIG,
+    }MODULE_TYPE;
 
   // union definition for holding various register type
   typedef union DATA32BIT {
@@ -67,7 +69,7 @@ namespace modalo {
   // class declarations
   class MODALO_API Reg; // class used to represent a register
   class MODALO_API MemBlock; // parent class used purely for reading contigous memory 
-  class MODALO_API Merror; // class to handle Modalo errors
+  class MODALO_API Mlog; // class to handle Modalo logs
   
   class MODALO_API MemBlock{
 
@@ -115,18 +117,22 @@ namespace modalo {
     uint16_t reverseBits(uint16_t num);
   };
 
-  class MODALO_API Merror{
+  class MODALO_API Mlog{
 
     public:
-    std::string errorString;
-    ERROR_TYPE error_t;
 
-    Merror(); // constructor
-    void setLastError(ERROR_TYPE error_t, std::string errorString);
+    Mlog(std::string logFname); // constructor
+    ~Mlog(); // destructor
+    void setLastLog(MODULE_TYPE module_t, std::string logString);
+    std::string getLastLog();
 
     private:
+    std::ofstream logFile;
+    MODULE_TYPE module_t;
+    std::string logString;
+    struct tm *localTimeS; // for holding error time
 
-  }M_Error; // Object created to handle modalo errors
+  }; // Object created to handle modalo errors
 
 }
 #endif

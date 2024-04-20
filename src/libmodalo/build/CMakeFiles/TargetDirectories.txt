@@ -1,4 +1,0 @@
-C:/Users/alina/projects/modscan/src/libmodalo/build/CMakeFiles/modalo.dir
-C:/Users/alina/projects/modscan/src/libmodalo/build/CMakeFiles/testModalo.dir
-C:/Users/alina/projects/modscan/src/libmodalo/build/CMakeFiles/edit_cache.dir
-C:/Users/alina/projects/modscan/src/libmodalo/build/CMakeFiles/rebuild_cache.dir
