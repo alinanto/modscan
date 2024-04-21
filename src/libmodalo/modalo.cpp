@@ -149,22 +149,23 @@ namespace modalo {
 
     Mlog::Mlog(std::string logFname) {
         logString = "";
-        module_t = L_NOLOG;
+        module_t = L_MODALO;
 
         // to open errorLogFile
         if(!logFname.empty())
         {
-            logFile.open(logFname, 
-                              std::ofstream::out | std::ofstream::app);
-
-
+            logFile.open(logFname,std::ofstream::out|std::ofstream::app);
+            if(logFile.is_open()) // confirmed no error
+                setLastLog(L_FILE_IO,"File " + logFname + " opened for Logs.");
         }
-        setLastLog(L_FILE_IO,logFname + " opened for Logs.");        
     }
 
     Mlog::~Mlog() {
-        setLastLog(L_TASK,"Program Terminated.");
-        if(logFile.is_open()) logFile.close();
+        setLastLog(L_MODALO,"Program Terminated.");
+        if(logFile.is_open()) {
+            logFile<<std::endl;
+            logFile.close();
+        }
     }
 
     void Mlog::setLastLog(MODULE_TYPE module_t, std::string logString) {
@@ -178,18 +179,29 @@ namespace modalo {
     }
 
     std::string Mlog::getLastLog() {
-        std::string out;
-
-        out = fmt::format("Hello World!");
-        // %04d%02d%02dT%02d%02d%02dZ"
-        /*
-        localTimeS->tm_year+1900, // The number of years since 1900
-        localTimeS->tm_mon+1,     // month, range 0 to 11
-        localTimeS->tm_mday,      // day of the month, range 1 to 31
-        localTimeS->tm_hour,      // hours, range 0 to 23
-        localTimeS->tm_min,       // minutes, range 0 to 59
-        localTimeS->tm_sec;       //update the ISO 8601 time strings */
-        return out;
+        // log format        YYYY-MM-DD HH:MM:SS : MODULE_TYPE : "LogString"
+        return fmt::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02} : {:^16} : \"{}\"\n",                        
+            localTimeS->tm_year+1900,
+            localTimeS->tm_mon+1,     // month, range 0 to 11
+            localTimeS->tm_mday,      // day of the month, range 1 to 31
+            localTimeS->tm_hour,      // hours, range 0 to 23
+            localTimeS->tm_min,       // minutes, range 0 to 59
+            localTimeS->tm_sec,       // update the ISO 8601 time strings
+            getModuleString(),        // to get the module string of Last Log (not exceed 16 char)
+            logString                 // to get the logString of Last Log
+        );
     }
-    
+
+    std::string Mlog::getModuleString() {
+        switch(module_t) {
+            case L_MODALO: return "MODALO";
+            case L_MODBUS: return "LIB-MODBUS";
+            case L_FILE_IO: return "FILE-IO";
+            case L_MODBUS_READ: return "MODBUS-READ";
+            case L_MODBUS_SLAVE: return "SET-SLAVE";
+            case L_PARSE_MAP: return "PARSE-MAP";
+            case L_PARSE_CONFIG: return "PARSE-CONFIG";
+            default : return "UNKNOWN MODULE";
+        }
+    }    
 }

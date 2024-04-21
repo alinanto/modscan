@@ -44,15 +44,13 @@ namespace modalo {
 
   // enum definition for denoting Modalo erros
   typedef enum MODULE_TYPE {
-    L_TASK=1,
-    L_NOLOG,
+    L_MODALO,
     L_MODBUS,
     L_FILE_IO,
-    E_MODBUS=-10000,
-    E_MODBUS_READ,
-    E_MODBUS_SLAVE,
-    E_PARSE_MAP,
-    E_PARSE_CONFIG,
+    L_MODBUS_READ,
+    L_MODBUS_SLAVE,
+    L_PARSE_MAP,
+    L_PARSE_CONFIG,
     }MODULE_TYPE;
 
   // union definition for holding various register type
@@ -131,6 +129,7 @@ namespace modalo {
     MODULE_TYPE module_t;
     std::string logString;
     struct tm *localTimeS; // for holding error time
+    std::string getModuleString();
 
   }; // Object created to handle modalo errors
 
