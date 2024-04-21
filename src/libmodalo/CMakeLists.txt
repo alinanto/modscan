@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
+
+set(DEPLOY_DIR_MODSCAN "${CMAKE_CURRENT_BINARY_DIR}/bin/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DEPLOY_DIR_MODSCAN})
+
 project(modalo)
 
 add_library(modalo SHARED modalo.cpp)

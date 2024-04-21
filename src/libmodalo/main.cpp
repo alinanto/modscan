@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "modalo.h"
+#include <modalo.h>
 
 int main()
 {
