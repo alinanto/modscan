@@ -3,7 +3,8 @@
 namespace modalo {
     
     // MemBlock Class function definitions
-    MemBlock::MemBlock(){
+    MemBlock::MemBlock(Config * config){
+        this->config = config;
         address = 0;
         size = 0;
         functionCode = 4;
@@ -28,14 +29,17 @@ namespace modalo {
         }
         if (size !=0 && pData == NULL) { // to allocate memory
             pData = new uint16_t[size];
-            if(pData == NULL) return false;; // add code here handle error here
+            if(pData == NULL) {
+                config->mlog->setLastLog(L_MEM_ALLOC,"Unable to allocate memory of new MemBlock Object!");
+                return false;; // add code here handle error here
+            }
             this->size = size;        
         }
         return this->size; //success
     }
 
     // function to read the given register in the given context
-    bool MemBlock::read(modbus_t* ctx)
+    bool MemBlock::read()
     {
         //char error[MODALO_ERROR_MAXLENGTH] = "";
         int mResult = 0;
@@ -45,30 +49,30 @@ namespace modalo {
             return false;;
         }
 
-        if(ctx == NULL) { // invalid modbus context
+        if(config->ctx == NULL) { // invalid modbus context
             //sprintf(error, "Reading register %s failed with CODE: %s",reg->regName,modbus_strerror(errno));
             //modaloSetLastError(EMODBUS_READ,error);
             return false;;
         }
 
         // set slave as current device configuration
-        if(modbus_set_slave(ctx,slaveID) == -1)   { // set slave error
+        if(modbus_set_slave(config->ctx,slaveID) == -1)   { // set slave error
             //sprintf(error,"Unable to select slave: %s, ERROR CODE:%s",slaveID,modbus_strerror(errno));
             //modaloSetLastError(EMODBUS_INIT,error);
             return false;;
         }
 
         // function code 3: Read Holding Register
-        if(functionCode==3) mResult = modbus_read_registers(ctx,address,size,pData);
+        if(functionCode==3) mResult = modbus_read_registers(config->ctx,address,size,pData);
 
         // function code 4: Read input register
-        else if(functionCode==4) mResult = modbus_read_input_registers(ctx,address,size,pData);
+        else if(functionCode==4) mResult = modbus_read_input_registers(config->ctx,address,size,pData);
 
         else return false;; // add code here for function Code error
 
         if(mResult != size)	{ // error reading register
             //sprintf(error, "SLAVE ID: %u => Reading register %s, failed with CODE: %s",slaveID,reg->regName,modbus_strerror(errno));
-            modbus_flush(ctx);
+            modbus_flush(config->ctx);
             //modaloSetLastError(EMODBUS_READ,error);
             return false;;
         }
@@ -77,7 +81,8 @@ namespace modalo {
 
     // Reg Class function definitions
 
-    Reg::Reg(){
+    Reg::Reg(Config *config){
+        this->config = config;
         address = 0; 
         size=0;
         name=""; 
@@ -88,10 +93,7 @@ namespace modalo {
         multiplier=1;
         divisor=1;
         data32.valueU32 = 0;
-        parent=NULL;
-        pNextReg = NULL;
-        pPrevReg = NULL;
-        
+        pNextReg = NULL;        
     }
 
     // Function to accept data from parent MemBlock    
@@ -157,6 +159,7 @@ namespace modalo {
             logFile.open(logFname,std::ofstream::out|std::ofstream::app);
             if(logFile.is_open()) // confirmed no error
                 setLastLog(L_FILE_IO,"File " + logFname + " opened for Logs.");
+            else setLastLog(L_FILE_IO,"Failed to open file " + logFname + " for Logs.");
         }
     }
 
@@ -197,6 +200,7 @@ namespace modalo {
             case L_MODALO: return "MODALO";
             case L_MODBUS: return "LIB-MODBUS";
             case L_FILE_IO: return "FILE-IO";
+            case L_MEM_ALLOC: return "MEM-ALLOC";
             case L_MODBUS_READ: return "MODBUS-READ";
             case L_MODBUS_SLAVE: return "SET-SLAVE";
             case L_PARSE_MAP: return "PARSE-MAP";
@@ -204,4 +208,15 @@ namespace modalo {
             default : return "UNKNOWN MODULE";
         }
     }    
+
+    // Modalo Class definitions
+
+    Config::Config(std::string logFname) {
+        mlog = new Mlog(logFname);
+        ctx = NULL;
+    }
+
+    Config::~Config() {
+        delete mlog;
+    }
 }

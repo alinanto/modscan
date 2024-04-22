@@ -46,6 +46,7 @@ namespace modalo {
   typedef enum MODULE_TYPE {
     L_MODALO,
     L_MODBUS,
+    L_MEM_ALLOC,
     L_FILE_IO,
     L_MODBUS_READ,
     L_MODBUS_SLAVE,
@@ -65,10 +66,24 @@ namespace modalo {
   }DATA32BIT;
 
   // class declarations
+  class MODALO_API Config;
   class MODALO_API Reg; // class used to represent a register
   class MODALO_API MemBlock; // parent class used purely for reading contigous memory 
   class MODALO_API Mlog; // class to handle Modalo logs
   
+  class MODALO_API Config{
+
+    public:
+    Mlog *mlog;
+    modbus_t* ctx;
+    Config(std::string logFname);
+    ~Config();
+
+    private: 
+    std::string logFname;
+
+  };
+
   class MODALO_API MemBlock{
 
     public:
@@ -76,12 +91,13 @@ namespace modalo {
     uint16_t functionCode;
     uint16_t slaveID;
 
-    MemBlock(); // constructor
+    MemBlock(Config *config); // constructor
     ~MemBlock(); // desctructor
-    bool read(modbus_t* ctx); // read memory from modbus device
+    bool read(); // read memory from modbus device
     bool setSize(uint16_t size);   // set size of MemBlock element
 
     private: 
+    Config *config;
     uint16_t size; // private because should not be changed in userspace due to 
                    // pData reallocation issues.
     uint16_t * pData;
@@ -103,15 +119,13 @@ namespace modalo {
     DATA32BIT data32;     // for getting value from parent
     double value;       // to store value after successfull read
     
-    Reg();  // constructor
+    Reg(Config *config);  // constructor
     bool setValue(DATA32BIT data32); // to be used only by parent MemBlock Object
     
     private:
 
-    MemBlock *parent; // pointer to Parent MemBlock
+    Config *config; // pointer to Parent MemBlock
     Reg *pNextReg;   // pointer to Next Register in Parent MemBlock
-    Reg *pPrevReg;   // pointer to Next Register in Parent MemBlock
-
     uint16_t reverseBits(uint16_t num);
   };
 
