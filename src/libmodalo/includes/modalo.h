@@ -8,11 +8,20 @@
 #include <fmt/core.h>
 #include <modbus.h>
 
+
 /* Pending Works
 
-1) ERROR API to be ported to CPP
-2) setValue to be implement
-3)
+///////////////////////////////////////////////////////for MODBUS SCANNER
+
+0) Create a MemDump Class to hold information regarding the values that are read.
+1) MemBlock Method to return DATA32 object of the given Mem Address if it belong to its address space
+3) MemBlock Method to use a Reg objects to dump all combination (U16,U32,F32 * (BYTE REVERSED and BYTE NORMAL)) to MemDump Class
+
+///////////////////////////////////////////////////////for MODBUS LOGGER
+
+4) MemBlock Destructor to delete all Reg Objects by traversing the Reg Linked-list
+5) MemBlock Method to add a new Reg to its Chain of Reg Linked List
+2) MemBlock Method to traverse the registers and update register values
 
 */
 
@@ -52,7 +61,7 @@ namespace modalo {
     L_MODBUS_SLAVE,
     L_PARSE_MAP,
     L_PARSE_CONFIG,
-    }MODULE_TYPE;
+  }MODULE_TYPE;
 
   // union definition for holding various register type
   typedef union DATA32BIT {
@@ -66,7 +75,7 @@ namespace modalo {
   }DATA32BIT;
 
   // class declarations
-  class MODALO_API Config;
+  class MODALO_API Config; // classs used to represent the config file
   class MODALO_API Reg; // class used to represent a register
   class MODALO_API MemBlock; // parent class used purely for reading contigous memory 
   class MODALO_API Mlog; // class to handle Modalo logs
