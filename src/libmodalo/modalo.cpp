@@ -3,7 +3,8 @@
 namespace modalo {
     
     // MemBlock Class function definitions
-    MemBlock::MemBlock(Config * config){
+
+    MemBlock::MemBlock(Config * config) {
         this->config = config;
         address = 0;
         size = 0;
@@ -13,15 +14,11 @@ namespace modalo {
         pFirstReg = NULL;
     }
 
-    // Destructor
-    MemBlock::~MemBlock()
-    {
+    MemBlock::~MemBlock()   {
         setSize(0); // to delete allocated memory
     }
 
-    // Function to set Size of MemBlock element and allocate memory for changes
-    bool MemBlock::setSize(uint16_t size)
-    {
+    bool MemBlock::setSize(uint16_t size)    {
         if(size != this->size && pData != NULL) { // to delete allocated memory
             delete[] pData;
             pData = NULL;
@@ -30,36 +27,31 @@ namespace modalo {
         if (size !=0 && pData == NULL) { // to allocate memory
             pData = new uint16_t[size];
             if(pData == NULL) {
-                config->mlog->setLastLog(L_MEM_ALLOC,"Unable to allocate memory of new MemBlock Object!");
-                return false;; // add code here handle error here
+                config->mlog->setLastLog(L_MEM_ALLOC,"Unable to allocate memory of new MemBlock Object");
+                return false;
             }
             this->size = size;        
         }
-        return this->size; //success
+        return true; //success
     }
 
-    // function to read the given register in the given context
-    bool MemBlock::read()
-    {
-        //char error[MODALO_ERROR_MAXLENGTH] = "";
+    bool MemBlock::read()    {
         int mResult = 0;
 
-        if(size == 0 || pData == NULL ) { // invalid REG
-            //modaloSetLastError(EMODBUS_READ,"Invalid / NULL Register");
-            return false;;
+        if(size == 0 || pData == NULL ) { // Unintiallised MemBlock
+            config->mlog->setLastLog(L_MEMBLOCK,"Invalid MemBlock Object in MemBlock::read()");
+            return false;
         }
 
         if(config->ctx == NULL) { // invalid modbus context
-            //sprintf(error, "Reading register %s failed with CODE: %s",reg->regName,modbus_strerror(errno));
-            //modaloSetLastError(EMODBUS_READ,error);
-            return false;;
+            config->mlog->setLastLog(L_MEMBLOCK,"Invalid modbus context in MemBlock::read()");
+            return false;
         }
 
         // set slave as current device configuration
         if(modbus_set_slave(config->ctx,slaveID) == -1)   { // set slave error
-            //sprintf(error,"Unable to select slave: %s, ERROR CODE:%s",slaveID,modbus_strerror(errno));
-            //modaloSetLastError(EMODBUS_INIT,error);
-            return false;;
+            config->mlog->setLastLog(L_MODBUS,"Unable to set slave in MemBlock::read()");
+            return false;
         }
 
         // function code 3: Read Holding Register
@@ -68,20 +60,24 @@ namespace modalo {
         // function code 4: Read input register
         else if(functionCode==4) mResult = modbus_read_input_registers(config->ctx,address,size,pData);
 
-        else return false;; // add code here for function Code error
-
-        if(mResult != size)	{ // error reading register
-            //sprintf(error, "SLAVE ID: %u => Reading register %s, failed with CODE: %s",slaveID,reg->regName,modbus_strerror(errno));
-            modbus_flush(config->ctx);
-            //modaloSetLastError(EMODBUS_READ,error);
-            return false;;
+        else {
+            config->mlog->setLastLog(L_MEMBLOCK,"Invalid Function Code in MemBlock::read()");
+            return false; 
         }
-       return true;
+        if(mResult != size)	{ // error reading register
+            modbus_flush(config->ctx);
+            config->mlog->setLastLog(L_MODBUS_READ,"Unable to read from Reg in MemBlock::read()");
+            config->mlog->setLastLog(L_MODBUS_READ,modbus_strerror(errno));
+            return false;
+        }
+        time_t seconds=time(NULL); // get the current time
+        localTimeS = localtime(&seconds); // set the time struct
+        return true;
     }
 
     // Reg Class function definitions
 
-    Reg::Reg(Config *config){
+    Reg::Reg(Config *config) {
         this->config = config;
         address = 0; 
         size=0;
@@ -96,7 +92,6 @@ namespace modalo {
         pNextReg = NULL;        
     }
 
-    // Function to accept data from parent MemBlock    
     bool Reg::setValue(DATA32BIT data32) {
         if(byteOrder == M_BIG_ENDIAN) { // reverse the bytes for Big Endian Register Byte Order
             uint16_t temp;
@@ -122,7 +117,7 @@ namespace modalo {
                 value = ((double)data32.valueU16 * (double)multiplier) / (double)divisor;
                 break;
             }
-            default : { // add code here : handle error
+            default : { config->mlog->setLastLog(L_REG,"Invalid Register Type in Reg::setValue()");
                 return false;
             }
         }
@@ -130,7 +125,6 @@ namespace modalo {
         return true;
     }
 
-    // Function to reverse bits of num
     uint16_t Reg::reverseBits(uint16_t num)
     {
         int count = 15;
@@ -199,6 +193,9 @@ namespace modalo {
         switch(module_t) {
             case L_MODALO: return "MODALO";
             case L_MODBUS: return "LIB-MODBUS";
+            case L_REG: return "REGISTER";
+            case L_MEMBLOCK: return "MEM_BLOCK";
+            case L_CONFIG: return "CONFIG";
             case L_FILE_IO: return "FILE-IO";
             case L_MEM_ALLOC: return "MEM-ALLOC";
             case L_MODBUS_READ: return "MODBUS-READ";
@@ -213,6 +210,7 @@ namespace modalo {
 
     Config::Config(std::string logFname) {
         mlog = new Mlog(logFname);
+        modbus_read_interval = 1000; // milliseconds
         ctx = NULL;
     }
 

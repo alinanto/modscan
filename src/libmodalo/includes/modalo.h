@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <fstream>
+#include <vector>
 #include <time.h>
 #include <fmt/core.h>
 #include <modbus.h>
@@ -13,11 +14,27 @@
 
 ///////////////////////////////////////////////////////for MODBUS SCANNER
 
-0) Create a MemDump Class to hold information regarding the values that are read.
-1) MemBlock Method to return DATA32 object of the given Mem Address if it belong to its address space
-3) MemBlock Method to use a Reg objects to dump all combination (U16,U32,F32 * (BYTE REVERSED and BYTE NORMAL)) to MemDump Class
+Config ->
+  Device information variables (baud, slave ID, Parity, databits & stop bits)
+  Method to parse config file
+  Pointer to a Mlog object to be used for current configuration
+  Pointer to a dump file to be used for current dump operation
+  Variables for config and targetscan file Names
 
-///////////////////////////////////////////////////////for MODBUS LOGGER
+
+ScanTarget -> 
+  Loads a ScanTarget File from the memory that specifies which register spaces to scan first
+  Parsed the Scan Target File and for each Target space defined, starts scanning for valid responses
+  For read MemBlock, adds the read data to a dump object
+  After finishing the target space moves to the next target until complete
+
+MemBlock ->
+  Private Method to check for valid parameters (Fcode, size, DATA pointer, Modbus ctx, RegType) before scanning
+  Method to dump information regarding the values that are read to a dump file/object
+  Method to get information regarding the values that are read from a dump file/object
+  Method to return DATA32 object of the given Mem Address if it belong to its address space
+
+/////////////////////////   for MODBUS LOGGER /////////////////////////////
 
 4) MemBlock Destructor to delete all Reg Objects by traversing the Reg Linked-list
 5) MemBlock Method to add a new Reg to its Chain of Reg Linked List
@@ -55,6 +72,9 @@ namespace modalo {
   typedef enum MODULE_TYPE {
     L_MODALO,
     L_MODBUS,
+    L_REG,
+    L_MEMBLOCK,
+    L_CONFIG,
     L_MEM_ALLOC,
     L_FILE_IO,
     L_MODBUS_READ,
@@ -85,6 +105,7 @@ namespace modalo {
     public:
     Mlog *mlog;
     modbus_t* ctx;
+    unsigned int modbus_read_interval; // milliseconds
     Config(std::string logFname);
     ~Config();
 
@@ -101,15 +122,18 @@ namespace modalo {
     uint16_t slaveID;
 
     MemBlock(Config *config); // constructor
-    ~MemBlock(); // desctructor
+    ~MemBlock(); // destructor
     bool read(); // read memory from modbus device
     bool setSize(uint16_t size);   // set size of MemBlock element
+    bool scan(std::vector<uint16_t> *pAddrList); // scan the address space and updates the address pairs in list
 
     private: 
-    Config *config;
+
+    static Config *config;
     uint16_t size; // private because should not be changed in userspace due to 
                    // pData reallocation issues.
     uint16_t * pData;
+    struct tm *localTimeS; // for holding read time
     Reg * pFirstReg;
   };
 
@@ -133,7 +157,7 @@ namespace modalo {
     
     private:
 
-    Config *config; // pointer to Parent MemBlock
+    static Config *config; // pointer to Parent MemBlock
     Reg *pNextReg;   // pointer to Next Register in Parent MemBlock
     uint16_t reverseBits(uint16_t num);
   };
